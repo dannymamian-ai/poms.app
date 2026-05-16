@@ -62,28 +62,33 @@ with st.container():
     with c2: genero = st.selectbox("Género", ['Hombre', 'Mujer'])
     with c3: contexto = st.selectbox("Contexto / Momento", ['Antes entreno', 'Después entreno', 'Antes competición', 'Después competición', 'Otros', 'Descarga', 'Lesión'])
 
+st.markdown("---")
 st.write("### Cuestionario de Estado de Ánimo")
-st.info("Responde según cómo te has sentido en la última semana.")
+st.info("Responde a los 58 ítems según cómo te has sentido en la última semana, incluyendo el día de hoy.")
 
-tabs = st.tabs(["Parte I (1-20)", "Parte II (21-40)", "Parte III (41-58)", "Salud y Estilo de Vida"])
 respuestas = []
 
+# Bucle para mostrar todas las preguntas seguidas
 for i, adj in enumerate(ADJETIVOS):
-    target_tab = tabs[0] if i < 20 else tabs[1] if i < 40 else tabs[2]
-    with target_tab:
-        val = st.radio(f"{i+1}. {adj}", options=[0, 1, 2, 3, 4], 
-                       format_func=lambda x: ["Nada", "Un poco", "Moderado", "Bastante", "Muchísimo"][x], 
-                       key=f"q_{i}", horizontal=True)
-        respuestas.append(val)
+    val = st.radio(f"**{i+1}. {adj}**", options=[0, 1, 2, 3, 4], 
+                   format_func=lambda x: ["Nada", "Un poco", "Moderado", "Bastante", "Muchísimo"][x], 
+                   key=f"q_{i}", horizontal=True)
+    respuestas.append(val)
+    # Pequeña línea separadora cada 20 preguntas para que no sature la vista
+    if (i + 1) % 20 == 0:
+        st.markdown("<hr style='border:1px dashed #ccc'>", unsafe_allow_html=True)
 
-with tabs[3]:
-    st.write("#### Factores Complementarios")
-    sueño = st.select_slider("Calidad de Sueño", options=[0, 1, 2, 3, 4], format_func=lambda x: ["Muy mala", "Mala", "Regular", "Buena", "Excelente"][x])
-    dieta = st.select_slider("Calidad de Alimentación", options=[0, 1, 2, 3, 4], format_func=lambda x: ["Muy mala", "Mala", "Regular", "Buena", "Excelente"][x])
+st.markdown("---")
+st.write("### Salud y Estilo de Vida")
+st.write("Por último, valora estos dos factores complementarios:")
+sueño = st.select_slider("Calidad de Sueño", options=[0, 1, 2, 3, 4], format_func=lambda x: ["Muy mala", "Mala", "Regular", "Buena", "Excelente"][x])
+dieta = st.select_slider("Calidad de Alimentación", options=[0, 1, 2, 3, 4], format_func=lambda x: ["Muy mala", "Mala", "Regular", "Buena", "Excelente"][x])
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 if st.button("🚀 FINALIZAR Y ANALIZAR RESULTADOS"):
     if not nombre:
-        st.warning("⚠️ Por favor, introduce el nombre para personalizar tu informe.")
+        st.warning("⚠️ Por favor, introduce el nombre en la parte superior para personalizar tu informe.")
     else:
         raw_scores = {f: sum(respuestas[idx-1] for idx in idxs) for f, idxs in FACTORS.items()}
         t_scores = {f: get_t_score(raw_scores[f], f, genero) for f in FACTORS}
